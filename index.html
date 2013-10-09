@@ -1,0 +1,122 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <title>Apartments.com Globe</title>
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/defaults.css">
+    <link rel="stylesheet" href="css/globe.css">   
+ <meta charset="utf-8">
+  </head>
+  <body>
+
+  <div id="container"></div>
+
+  <div id="info">
+    <strong><a href="http://www.chromeexperiments.com/globe">WebGL Globe</a></strong> <span class="bull">&bull;</span> Created by the Google Data Arts Team <span class="bull">&bull;</span> Data acquired from <a href="http://sedac.ciesin.columbia.edu/gpw/">SEDAC</a>
+  </div>
+
+  <div id="currentInfo">
+    <span id="year2011" class="year">2011</span>
+    <span id="year2012" class="year">2012</span>
+    <span id="year2013" class="year">2013</span>
+  </div>
+  <div id="title">
+   <h1 id="title">
+	 Where in the World is Apartments.com?
+   </h1>
+   <p>
+	This is a visualization of current Apartments.com listings mapped to their worldwide location.  
+   </p>
+   <p>
+     Take the globe for a spin.  Pinch the globe to zoom in.  Enjoy!
+  </p>
+   <p>
+     Interested in learning more?  Check out: <a href="http://www.chromeexperiments.com/globe/">Chrome Experiment</a>
+   </p>
+  </div>
+<!--
+  <a id="ce" href="http://www.chromeexperiments.com/globe">
+    <span>This is a Chrome Experiment</span>
+  </a>
+-->
+  <script type="text/javascript" src="/globe/third-party/Three/ThreeWebGL.js"></script>
+  <script type="text/javascript" src="/globe/third-party/Three/ThreeExtras.js"></script>
+  <script type="text/javascript" src="/globe/third-party/Three/RequestAnimationFrame.js"></script>
+  <script type="text/javascript" src="/globe/third-party/Three/Detector.js"></script>
+  <script type="text/javascript" src="/globe/third-party/Tween.js"></script>
+  <script type="text/javascript" src="/globe/globe.js"></script>
+  <script type="text/javascript">
+
+    if(!Detector.webgl){
+      Detector.addGetWebGLMessage();
+    } else {
+
+      var years = ['2011','2012','2013'];
+      var container = document.getElementById('container');
+      var globe = new DAT.Globe(container);
+      console.log(globe);
+      var i, tweens = [];
+
+      var settime = function(globe, t) {
+        return function() {
+          new TWEEN.Tween(globe).to({time: t/years.length},500).easing(TWEEN.Easing.Cubic.EaseOut).start();
+          var y = document.getElementById('year'+years[t]);
+          if (y.getAttribute('class') === 'year active') {
+            return;
+          }
+          var yy = document.getElementsByClassName('year');
+          for(i=0; i<yy.length; i++) {
+            yy[i].setAttribute('class','year');
+          }
+          y.setAttribute('class', 'year active');
+        };
+      };
+
+
+      for(var i = 0; i<years.length; i++) {
+        var y = document.getElementById('year'+years[i]);
+        y.addEventListener('mouseover', settime(globe,i), false);
+      }
+
+      var xhr;
+      TWEEN.start();
+
+
+      xhr = new XMLHttpRequest();
+      xhr.open('GET', '/globe/json/apartments.json', true);
+      xhr.onreadystatechange = function(e) {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            var data = JSON.parse(xhr.responseText);
+            window.data = data;
+            for (i=0;i<data.length;i++) {
+              globe.addData(data[i][1], {format: 'magnitude', name: data[i][0], animated: true});
+            }
+            globe.createPoints();
+            settime(globe,0)();
+            globe.animate();
+          }
+        }
+      };
+      xhr.send(null);
+    }
+
+  </script>
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-16533725-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+
+  </body>
+
+</html>
